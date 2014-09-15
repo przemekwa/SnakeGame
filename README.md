@@ -1,6 +1,7 @@
 SnakeGame
 =========
 
-The SnakeGame in C#. Console mode.
+The SnakeGame in C#. 
 
-The SnakeGame. 
+Play game in console mode.
+
