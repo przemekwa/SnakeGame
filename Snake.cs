@@ -22,7 +22,11 @@
         private int MapY { get; set; }
         private int SnakeLenght { get; set; }
 
+        public int mode = 0;
+
         public ConsoleKeyInfo kierunek { get; set; }
+
+        private int Diners { get; set; }
 
         int[,] map;
 
@@ -42,13 +46,13 @@
             Task t = new Task(
                 () => 
                     {
+                        kierunek = new ConsoleKeyInfo('s', ConsoleKey.LeftArrow, false, false, false); // Console.ReadKey();
+
                         while (true)
                             kierunek = Console.ReadKey();
                     }
                 );
             t.Start();
-            
-            kierunek = new ConsoleKeyInfo('s',ConsoleKey.LeftArrow,false,false,false) ; // Console.ReadKey();
             
             while (true)
             Play(); 
@@ -57,6 +61,8 @@
         private void Play()
         {
             int velocity = 100;
+
+            Diners = 0;
 
             map = new int[MapX, MapY];
 
@@ -80,10 +86,7 @@
             {
                 System.Threading.Thread.Sleep(velocity);
 
-                var key = kierunek;//new ConsoleKeyInfo('s',ConsoleKey.LeftArrow,false,false,false) ; // Console.ReadKey();
-
-
-                switch (key.Key)
+                switch (kierunek.Key)
                 {
                     case ConsoleKey.UpArrow:
                         actualPosition.Y--;
@@ -97,6 +100,9 @@
                     case ConsoleKey.RightArrow:
                         actualPosition.X++;
                         break;
+                    case ConsoleKey.Q:
+                        mode = mode == 0 ? 1 : 0;
+                        break;
                 }
 
                 switch (map[actualPosition.X, actualPosition.Y])
@@ -108,6 +114,7 @@
                     case 8:
                         SnakeBodyPoints.AddFirst(actualPosition);
                         CreateSnakeDiner();
+                        Diners++;
                         velocity -= 10;
                         break;
                     case 9:
@@ -238,13 +245,13 @@
                             linia = linia + "*";
                             break;
                         case 2:
-                            linia = linia + (char)1;
+                            linia = mode == 0 ? linia = linia + (char)1 : linia + Diners.ToString();
                             break;
                         case 7:
                             linia = linia + "B";
                             break;
                         case 8:
-                            linia = linia + (char)15;
+                            linia = mode == 0 ? linia = linia + (char)15 : linia + (Diners + 1).ToString();
                             break;
                         case 9:
                             linia = linia + (char)176;
