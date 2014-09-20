@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Threading.Tasks;
 
     struct Point
     {
@@ -21,9 +22,11 @@
         private int MapY { get; set; }
         private int SnakeLenght { get; set; }
 
+        public ConsoleKeyInfo kierunek { get; set; }
+
         int[,] map;
 
-        readonly LinkedList<Point> SnakeBodyPoint = new LinkedList<Point>();
+        readonly LinkedList<Point> SnakeBodyPoints = new LinkedList<Point>();
 
         public Snake(int sizeX, int sizeY, int sizeSnake)
         {
@@ -36,12 +39,25 @@
 
         public void PlayGame()
         {
+            Task t = new Task(
+                () => 
+                    {
+                        while (true)
+                            kierunek = Console.ReadKey();
+                    }
+                );
+            t.Start();
+            
+            kierunek = new ConsoleKeyInfo('s',ConsoleKey.LeftArrow,false,false,false) ; // Console.ReadKey();
+            
             while (true)
-                Play(); 
+            Play(); 
         }
 
         private void Play()
         {
+            int velocity = 100;
+
             map = new int[MapX, MapY];
 
             CreateBounds();
@@ -54,7 +70,7 @@
 
             var actualPosition = new Point(random.Next(2, MapX - 2), random.Next(2, MapY - 2));
 
-            SnakeBodyPoint.Clear();
+            SnakeBodyPoints.Clear();
 
             CreateSnake(actualPosition.X, actualPosition.Y);
 
@@ -62,7 +78,10 @@
 
             while (!endGame)
             {
-                var key = Console.ReadKey();
+                System.Threading.Thread.Sleep(velocity);
+
+                var key = kierunek;//new ConsoleKeyInfo('s',ConsoleKey.LeftArrow,false,false,false) ; // Console.ReadKey();
+
 
                 switch (key.Key)
                 {
@@ -83,12 +102,13 @@
                 switch (map[actualPosition.X, actualPosition.Y])
                 {
                     case 0:
-                        SnakeBodyPoint.AddFirst(actualPosition);
-                        SnakeBodyPoint.RemoveLast();
+                        SnakeBodyPoints.AddFirst(actualPosition);
+                        SnakeBodyPoints.RemoveLast();
                         break;
                     case 8:
-                        SnakeBodyPoint.AddFirst(actualPosition);
-                        map[random.Next(1, MapX - 1), random.Next(1, MapY - 1)] = 8;
+                        SnakeBodyPoints.AddFirst(actualPosition);
+                        CreateSnakeDiner();
+                        velocity -= 10;
                         break;
                     case 9:
                         endGame = true;
@@ -102,6 +122,32 @@
                 RefreshScrean();
             }
         }
+
+        private void CreateSnakeDiner()
+        {
+            var random = new Random();
+
+            var goodPoint = false;
+
+            Point p = new Point();
+            
+            while (!goodPoint)
+            {
+                p.X = random.Next(1, MapX - 2);
+                p.Y = random.Next(1, MapY - 2);
+
+                foreach (var snakeBodyPoint in SnakeBodyPoints)
+                {
+                    if (snakeBodyPoint.X != p.X && snakeBodyPoint.Y != p.Y)
+                    {
+                        goodPoint = true;
+                    }
+                }
+            }
+
+            map[p.X, p.Y] = 8;
+
+           }
 
         private void RefreshScrean()
         {
@@ -125,7 +171,37 @@
         {
             for (var i = 0; i < SnakeLenght; i++)
             {
-                SnakeBodyPoint.AddLast(new Point(x++, y));
+
+                while (!CheckPosition(x,y))  // Jak będzie w rogu to się zawiesi : )
+                {
+                    if (x > MapX - 2)
+                    {
+                        x--;
+                        y++;
+                    }
+
+                    if (x < 2)
+                    {
+                        x++;
+                    }
+
+
+                    if (y > MapY - 2)
+                    {
+                        x++;
+                        y--;
+                    }
+                    
+                    if (y < 2)
+                    {
+                        y++;
+                    }
+
+
+
+                }
+
+                SnakeBodyPoints.AddLast(new Point(x++, y));
             }
 
             AddSnakeToMap();
@@ -133,12 +209,12 @@
 
         private bool CheckPosition(int x, int y)
         {
-            if (x > MapX - 1 || x < 2)
+            if (x > MapX - 2 || x < 2)
             {
                 return false;
             }
 
-            if (y > MapY - 1 || x < 2)
+            if (y > MapY - 2 || x < 2)
             {
                 return false;
             }
@@ -185,7 +261,7 @@
 
         private void AddSnakeToMap()
         {
-            foreach (var point in SnakeBodyPoint)
+            foreach (var point in SnakeBodyPoints)
             {
                 map[point.X, point.Y] = 2;
             }
