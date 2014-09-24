@@ -22,9 +22,11 @@
         private int MapY { get; set; }
         private int SnakeLenght { get; set; }
 
+        private ConsoleKeyInfo defaultKeyInfo = new ConsoleKeyInfo('s', ConsoleKey.LeftArrow, false, false, false); // Console.ReadKey();
         public int mode = 0;
 
         public ConsoleKeyInfo kierunek { get; set; }
+        public ConsoleKeyInfo poprzednikierunek { get; set; }
 
         private int Diners { get; set; }
 
@@ -46,19 +48,21 @@
             Task t = new Task(
                 () => 
                     {
-                        kierunek = new ConsoleKeyInfo('s', ConsoleKey.LeftArrow, false, false, false); // Console.ReadKey();
+                        kierunek = defaultKeyInfo;
 
                         while (true)
                             kierunek = Console.ReadKey();
                     }
                 );
             t.Start();
-            
-            while (true)
-            Play(); 
-        }
 
-        private void Play()
+            while (Play())
+            {
+
+            }
+            }
+
+        private bool Play()
         {
             int velocity = 100;
 
@@ -82,6 +86,8 @@
 
             DrawMap();
 
+            bool pause = false;
+
             while (!endGame)
             {
                 System.Threading.Thread.Sleep(velocity);
@@ -90,44 +96,61 @@
                 {
                     case ConsoleKey.UpArrow:
                         actualPosition.Y--;
+                        pause = false;
                         break;
                     case ConsoleKey.DownArrow:
                         actualPosition.Y++;
+                        pause = false;
                         break;
                     case ConsoleKey.LeftArrow:
                         actualPosition.X--;
+                        pause = false;
                         break;
                     case ConsoleKey.RightArrow:
                         actualPosition.X++;
+                        pause = false;
                         break;
                     case ConsoleKey.Q:
-                        mode = mode == 0 ? 1 : 0;
+                        if (!pause)
+                          mode = mode == 0 ? 1 : 0;
+                        pause = true;
                         break;
+                    default:
+                        pause = true;
+                        break;
+
                 }
 
-                switch (map[actualPosition.X, actualPosition.Y])
+                if (!pause)
                 {
-                    case 0:
-                        SnakeBodyPoints.AddFirst(actualPosition);
-                        SnakeBodyPoints.RemoveLast();
-                        break;
-                    case 8:
-                        SnakeBodyPoints.AddFirst(actualPosition);
-                        CreateSnakeDiner();
-                        Diners++;
-                        velocity -= 10;
-                        break;
-                    case 9:
-                        endGame = true;
-                        break;
-                    case 2:
-                        endGame = true;
-                        break;
+                    switch (map[actualPosition.X, actualPosition.Y])
+                    {
+                        case 0:
+                            SnakeBodyPoints.AddFirst(actualPosition);
+                            SnakeBodyPoints.RemoveLast();
+                            break;
+                        case 8:
+                            SnakeBodyPoints.AddFirst(actualPosition);
+                            CreateSnakeDiner();
+                            Diners++;
+                            velocity -= 10;
+                            break;
+                        case 9:
+                            endGame = true;
+                            kierunek = defaultKeyInfo; 
+                            break;
+                        case 2:
+                            endGame = true;
+                            kierunek = defaultKeyInfo; 
+                            break;
+                    }
                 }
                 ClearSnakePosition();
                 AddSnakeToMap();
                 RefreshScrean();
             }
+
+            return endGame;
         }
 
         private void CreateSnakeDiner()
