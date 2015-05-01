@@ -1,9 +1,11 @@
 ﻿namespace SnakeGame
 {
+
     using System;
     using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
+ 
 
     struct Point
     {
@@ -18,6 +20,7 @@
 
     public class Snake
     {
+
         private int MapX { get; set; }
         private int MapY { get; set; }
         private int SnakeLenght { get; set; }
